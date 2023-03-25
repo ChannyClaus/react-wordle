@@ -16,6 +16,10 @@ type Props = {
 
 const ws = new WebSocket('ws://localhost:8080')
 
+// Relays key / click event to the server via WebSocket,
+// which in turn broadcasts those events to relevant clients.
+// Upon receiving those events via websocket, each client
+// re-renders the page in response.
 export const Keyboard = ({
   onChar,
   onDelete,
@@ -25,50 +29,54 @@ export const Keyboard = ({
   isRevealing,
 }: Props) => {
   const charStatuses = getStatuses(solution, guesses)
+
+  // handler for the click event.
   const onClick = (value: string) => {
     if (value === 'ENTER') {
-      ws.send('ENTER')
+      ws.send(JSON.stringify({ key: 'ENTER' }))
     } else if (value === 'DELETE') {
-      ws.send('DELETE')
+      ws.send(JSON.stringify({ key: 'DELETE' }))
     } else {
-      ws.send(value)
+      ws.send(JSON.stringify({ key: value }))
     }
   }
 
-  useEffect(() => {
-    const listener = (event: MessageEvent) => {
-      console.log('websocket received: ', event.data)
-      if (event.data === 'ENTER') {
-        onEnter()
-      } else if (event.data === 'DELETE') {
-        onDelete()
-      } else {
-        onChar(event.data)
-      }
-    }
-    ws.addEventListener('message', listener)
-    return () => {
-      ws.removeEventListener('message', listener)
-    }
-  }, [onEnter, onDelete, onChar])
-
+  // handler for the key press event.
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
       if (e.code === 'Enter') {
-        ws.send('ENTER')
+        ws.send(JSON.stringify({ key: 'ENTER' }))
       } else if (e.code === 'Backspace') {
-        ws.send('DELETE')
+        ws.send(JSON.stringify({ key: 'DELETE' }))
       } else {
         const key = localeAwareUpperCase(e.key)
         // TODO: check this test if the range works with non-english letters
         if (key.length === 1 && key >= 'A' && key <= 'Z') {
-          ws.send(key)
+          ws.send(JSON.stringify({ key }))
         }
       }
     }
     window.addEventListener('keyup', listener)
     return () => {
       window.removeEventListener('keyup', listener)
+    }
+  }, [onEnter, onDelete, onChar])
+
+  // handler for the websocket message receive.
+  useEffect(() => {
+    const listener = (event: MessageEvent) => {
+      const { key } = JSON.parse(event.data)
+      if (key === 'ENTER') {
+        onEnter()
+      } else if (key === 'DELETE') {
+        onDelete()
+      } else {
+        onChar(key)
+      }
+    }
+    ws.addEventListener('message', listener)
+    return () => {
+      ws.removeEventListener('message', listener)
     }
   }, [onEnter, onDelete, onChar])
 
