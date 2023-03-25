@@ -69,9 +69,15 @@ function App() {
 
   const [currentGuess, setCurrentGuess] = useState('')
   const setCurrentGuessAndSync = function (currentGuess: string) {
-    ws.send(JSON.stringify({ guess: currentGuess }))
+    ws.send(JSON.stringify({ currentGuess }))
     setCurrentGuess(currentGuess)
   }
+  ws.addEventListener('message', (event) => {
+    const currentGuess = JSON.parse(event.data).currentGuess
+    if (currentGuess) {
+      setCurrentGuess(currentGuess)
+    }
+  })
 
   const [isGameWon, setIsGameWon] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
