@@ -54,6 +54,9 @@ import {
   unicodeLength,
 } from './lib/words'
 
+const BACKEND_URL = 'ws://localhost:8080'
+const ws = new WebSocket(BACKEND_URL)
+
 function App() {
   const isLatestGame = getIsLatestGame()
   const gameDate = getGameDate()
@@ -63,7 +66,13 @@ function App() {
 
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
+
   const [currentGuess, setCurrentGuess] = useState('')
+  const setCurrentGuessAndSync = function (currentGuess: string) {
+    ws.send(JSON.stringify({ guess: currentGuess }))
+    setCurrentGuess(currentGuess)
+  }
+
   const [isGameWon, setIsGameWon] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
@@ -194,12 +203,12 @@ function App() {
       guesses.length < MAX_CHALLENGES &&
       !isGameWon
     ) {
-      setCurrentGuess(`${currentGuess}${value}`)
+      setCurrentGuessAndSync(`${currentGuess}${value}`)
     }
   }
 
   const onDelete = () => {
-    setCurrentGuess(
+    setCurrentGuessAndSync(
       new GraphemeSplitter().splitGraphemes(currentGuess).slice(0, -1).join('')
     )
   }
@@ -249,7 +258,7 @@ function App() {
       !isGameWon
     ) {
       setGuesses([...guesses, currentGuess])
-      setCurrentGuess('')
+      setCurrentGuessAndSync('')
 
       if (winningWord) {
         if (isLatestGame) {
