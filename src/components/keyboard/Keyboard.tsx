@@ -14,6 +14,8 @@ type Props = {
   isRevealing?: boolean
 }
 
+const ws = new WebSocket('ws://localhost:8080')
+
 export const Keyboard = ({
   onChar,
   onDelete,
@@ -24,12 +26,19 @@ export const Keyboard = ({
 }: Props) => {
   const charStatuses = getStatuses(solution, guesses)
 
+  ws.addEventListener('message', (event) => {
+    console.log(event.data)
+  })
+
   const onClick = (value: string) => {
     if (value === 'ENTER') {
+      ws.send('ENTER')
       onEnter()
     } else if (value === 'DELETE') {
+      ws.send('DELETE')
       onDelete()
     } else {
+      ws.send(value)
       onChar(value)
     }
   }
@@ -37,13 +46,16 @@ export const Keyboard = ({
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
       if (e.code === 'Enter') {
+        ws.send('ENTER')
         onEnter()
       } else if (e.code === 'Backspace') {
+        ws.send('DELETE')
         onDelete()
       } else {
         const key = localeAwareUpperCase(e.key)
         // TODO: check this test if the range works with non-english letters
         if (key.length === 1 && key >= 'A' && key <= 'Z') {
+          ws.send(key)
           onChar(key)
         }
       }

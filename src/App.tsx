@@ -54,9 +54,6 @@ import {
   unicodeLength,
 } from './lib/words'
 
-const BACKEND_URL = 'ws://localhost:8080' || process.env.BACKEND_URL
-const ws = new WebSocket(BACKEND_URL)
-
 function App() {
   const isLatestGame = getIsLatestGame()
   const gameDate = getGameDate()
@@ -66,19 +63,7 @@ function App() {
 
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
-
   const [currentGuess, setCurrentGuess] = useState('')
-  const setCurrentGuessAndSync = function (currentGuess: string) {
-    ws.send(JSON.stringify({ currentGuess }))
-    setCurrentGuess(currentGuess)
-  }
-  ws.addEventListener('message', (event) => {
-    const currentGuess = JSON.parse(event.data).currentGuess
-    if (currentGuess) {
-      setCurrentGuess(currentGuess)
-    }
-  })
-
   const [isGameWon, setIsGameWon] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
@@ -209,12 +194,12 @@ function App() {
       guesses.length < MAX_CHALLENGES &&
       !isGameWon
     ) {
-      setCurrentGuessAndSync(`${currentGuess}${value}`)
+      setCurrentGuess(`${currentGuess}${value}`)
     }
   }
 
   const onDelete = () => {
-    setCurrentGuessAndSync(
+    setCurrentGuess(
       new GraphemeSplitter().splitGraphemes(currentGuess).slice(0, -1).join('')
     )
   }
@@ -264,7 +249,7 @@ function App() {
       !isGameWon
     ) {
       setGuesses([...guesses, currentGuess])
-      setCurrentGuessAndSync('')
+      setCurrentGuess('')
 
       if (winningWord) {
         if (isLatestGame) {
