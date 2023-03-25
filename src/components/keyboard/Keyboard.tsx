@@ -15,6 +15,9 @@ type Props = {
 }
 
 const ws = new WebSocket('ws://localhost:8080')
+ws.addEventListener('message', (event) => {
+  console.log('websocket received: ', event.data)
+})
 
 export const Keyboard = ({
   onChar,
@@ -25,10 +28,6 @@ export const Keyboard = ({
   isRevealing,
 }: Props) => {
   const charStatuses = getStatuses(solution, guesses)
-
-  ws.addEventListener('message', (event) => {
-    console.log(event.data)
-  })
 
   const onClick = (value: string) => {
     if (value === 'ENTER') {
