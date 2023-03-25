@@ -54,7 +54,7 @@ import {
   unicodeLength,
 } from './lib/words'
 
-const BACKEND_URL = 'ws://localhost:8080'
+const BACKEND_URL = 'ws://localhost:8080' || process.env.BACKEND_URL
 const ws = new WebSocket(BACKEND_URL)
 
 function App() {
