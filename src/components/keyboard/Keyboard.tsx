@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { DELETE_TEXT, ENTER_TEXT } from '../../constants/strings'
 import { getStatuses } from '../../lib/statuses'
+import { ws } from '../../lib/websocket'
 import { localeAwareUpperCase } from '../../lib/words'
 import { Key } from './Key'
 
@@ -13,8 +14,6 @@ type Props = {
   guesses: string[]
   isRevealing?: boolean
 }
-
-const ws = new WebSocket('ws://localhost:8080')
 
 // Relays key / click event to the server via WebSocket,
 // which in turn broadcasts those events to relevant clients.
