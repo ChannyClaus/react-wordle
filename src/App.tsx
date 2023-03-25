@@ -117,7 +117,8 @@ function App() {
   )
 
   useEffect(() => {
-    fetch('http://localhost:8080/state')
+    // load the state of the session from the backend.
+    fetch('/state')
       .then((response) => response.json())
       .then((data) => {
         setCurrentGuess(data.currentGuess || '')
